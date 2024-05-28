@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title></title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+      // 参考
+      // https://ja.vuejs.org/examples/#list-transition
+      import {createApp, ref} from "vue"
+
+      createApp({
+        setup() {
+          // 整数ランダム(0からmax-1)
+          function randInt(max) {
+            return Math.floor(Math.random() * max)
+          }
+          // ランダムな色(alphaは0-1[両端を含む])
+          function randColor() {
+            let r = randInt(256)
+            let g = randInt(256)
+            let b = randInt(256)
+            let a = randInt(256) / 255
+            return `rgba(${r}, ${g}, ${b}, ${a})`
+          }
+          // オブジェクト作成
+          function makeObj(id) {
+            let dict = {}
+            dict['id'] = id
+            dict['backgroundColor'] = randColor()
+            return dict
+          }
+          // 初期化
+          let id = 0
+          const COLS = 10
+          const ROWS = 10
+          // アイテムの初期化
+          const getInitialItems = (cols, rows) => {
+            let listItems = []
+            for (let i = 0; i < (cols * rows); i++) {
+              listItems.push(makeObj(i))
+            }
+            // IDの初期化
+            id = listItems.length
+            return listItems
+          }
+
+          // リアクティブ値
+          const cols = ref(COLS)
+          const rows = ref(ROWS)
+          const darkMode = ref(false)
+          const circleMode = ref(true)
+          const items = ref(getInitialItems(cols.value, rows.value))
+
+          // 挿入(ランダム位置)
+          function insert() {
+            const i = Math.floor(Math.random() * items.value.length)
+            // 挿入とIDカウントアップ
+            items.value.splice(i, 0, makeObj(id++))
+          }
+          // 削除(クリック位置)
+          function remove(item) {
+            const i = items.value.indexOf(item)
+            if (i > -1) {
+              items.value.splice(i, 1)
+            }
+          }
+          // シャッフル
+          // https://ja.javascript.info/task/shuffle
+          function shuffle() {
+            for (let i = items.value.length - 1; i > 0; i--) {
+              let j = Math.floor(Math.random() * (i + 1));
+              [items.value[i], items.value[j]] = [items.value[j], items.value[i]];
+            }
+          }
+          // リセット
+          function reset() {
+            items.value = getInitialItems(cols.value, rows.value)
+          }
+          // ダークモード
+          function changeDarkMode() {
+            let color = darkMode.value ? 'black' : 'white'
+            // スタイルで色を変更
+            let el = document.querySelector('body')
+            el.setAttribute('style', `background-color: ${color}`)
+          }
+          // 円モード
+          function changeCircleMode() {
+            let radius = circleMode.value ? '50%' : '0'
+            // CSSの変数を変更
+            let el = document.querySelector('#app')
+            el.style.setProperty("--my-radius", radius)
+          }
+          // 行の数を変更
+          function changeCols() {
+            // CSSの変数を変更
+            let el = document.querySelector('#app')
+            el.style.setProperty("--my-cols", cols.value)
+            // 現状は行と列は同じ
+            rows.value = cols.value
+            // リセット
+            reset()
+          }
+          // // 計算で行の数を変更
+          // const sizeDict = computed(() => {
+          //   let widthItem = 100 / cols.value
+          //   let heightItem = 100 / rows.value
+          //   let ret = {
+          //     width: `min(${widthItem}vw, ${widthItem}vh)`,
+          //     height: `min(${heightItem}vw, ${heightItem}vh)`,
+          //   }
+          //   return ret
+          // })
+
+          return {
+            items,
+            insert,
+            remove,
+            shuffle,
+            reset,
+            darkMode,
+            changeDarkMode,
+            circleMode,
+            changeCircleMode,
+            cols,
+            // rows,
+            changeCols,
+            // sizeDict,
+          }
+        },
+      }).mount("#app")
+    </script>
+
+    <div id="app">
+      <div class="control">
+        <button @click="insert">Insert</button>
+        <button @click="reset">Reset</button>
+        <button @click="shuffle">Shuffle</button>
+        <label><input type="checkbox" v-model="darkMode" @change="changeDarkMode">darkMode</label>
+        <label><input type="checkbox" v-model="circleMode" @change="changeCircleMode">circleMode</label>
+        <label><input type="range" min="1" max="30" v-model="cols" @change="changeCols">cols: {{cols}}</label>
+      </div>
+
+      <transition-group tag="div" name="fade" class="container">
+        <div v-for="item in items"
+          class="item"
+          :style="[{backgroundColor:item.backgroundColor}]"
+          @click="remove(item)"
+          :key="item.id">
+        </div>
+      </transition-group>
+    </div>
+  </body>
+</html>

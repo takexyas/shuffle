@@ -1,0 +1,52 @@
+:root {
+  --my-cols: 10;
+  --my-radius: 50%;
+}
+
+html {
+  scrollbar-width: none;
+}
+body {
+  margin: 0;
+  background-color: white;
+}
+
+.control {
+  z-index: 100;
+  color: black;
+  background-color: rgba(128, 128, 128, 0.8);
+  text-shadow: 0px 0px 10px white;
+  border: 1px solid darkgray;
+}
+.container {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  margin: auto;
+  max-width: min(90vw, 90vh);
+}
+.item {
+  width: min(calc(90vw / var(--my-cols)), calc(90vh / var(--my-cols)));
+  height: min(calc(90vw / var(--my-cols)), calc(90vh / var(--my-cols)));
+  box-sizing: border-box;
+  border-radius: var(--my-radius);
+  border: 1px dotted gray;
+}
+
+.fade-move,
+.fade-enter-active {
+  transition: all 0.5s ease;
+}
+.fade-enter-from{
+  opacity: 0;
+  transform: scale(4);
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: scale(0);
+}
+.fade-leave-active {
+  position: absolute;
+  z-index: -100;
+}
